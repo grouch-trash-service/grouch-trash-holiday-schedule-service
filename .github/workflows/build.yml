@@ -30,3 +30,16 @@ jobs:
 
     - name: Sam Build
       run: sam build
+
+    - name: SonarCloud Scan
+      run: ./mvnw -Dsonar.login=${SONAR_TOKEN} verify sonar:sonar
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check Sonar Status
+      run: |
+        status=$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=grouch-trash-holiday-schedule-service)
+        echo $status | jq '.'
+        status=$(echo $status | jq '.projectStatus.status')
+        test '"OK"' = $status
