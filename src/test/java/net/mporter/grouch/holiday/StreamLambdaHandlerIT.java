@@ -22,7 +22,7 @@ import java.io.InputStream;
 import static org.junit.Assert.*;
 
 
-public class StreamLambdaHandlerTest {
+public class StreamLambdaHandlerIT {
 
     private static StreamLambdaHandler handler;
     private static Context lambdaContext;
