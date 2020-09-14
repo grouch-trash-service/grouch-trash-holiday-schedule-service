@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Spring Boot API - net.mporter::grouch-trash-holiday-schedule-service
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+
+Resources:
+  GrouchTrashHolidayScheduleServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: net.mporter.grouch.holiday.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      CodeUri: .
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 30
+      Events:
+        ProxyResource:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+
+Outputs:
+  GrouchTrashHolidayScheduleServiceApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/ping'
+    Export:
+      Name: GrouchTrashHolidayScheduleServiceApi
