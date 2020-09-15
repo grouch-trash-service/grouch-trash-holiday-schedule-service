@@ -26,13 +26,17 @@ jobs:
         aws-region: us-east-1
 
     - name: Build with Maven
-      run: ./mvnw clean package
+      run: |
+        ./mvnw clean package
 
     - name: Sam Build
       run: sam build
 
     - name: SonarCloud Scan
-      run: ./mvnw -Dsonar.login=${SONAR_TOKEN} verify sonar:sonar
+      run: |
+        docker-compose up -d
+        ./mvnw -Dsonar.login=${SONAR_TOKEN} verify sonar:sonar
+        docker-compose down
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
