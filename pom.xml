@@ -27,7 +27,8 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.exclusions>
             **/Application.java,
-            **/StreamLambdaHandler.java
+            **/StreamLambdaHandler.java,
+            **/config/**
         </sonar.coverage.exclusions>
     </properties>
 
@@ -117,6 +118,7 @@
                     <excludes>
                         <exclude>**/Application.*</exclude>
                         <exclude>**/StreamLambdaHandler.*</exclude>
+                        <exclude>**/config/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
