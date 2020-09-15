@@ -30,7 +30,10 @@ jobs:
         ./mvnw clean package
 
     - name: Sam Build
-      run: sam build
+      run: |
+        docker-compose up -d
+        sam build
+        docker-compose down
 
     - name: SonarCloud Scan
       run: |
