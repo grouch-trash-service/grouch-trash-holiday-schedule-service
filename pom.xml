@@ -67,7 +67,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -139,7 +138,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M4</version>
                 <executions>
                     <execution>
                         <goals>
