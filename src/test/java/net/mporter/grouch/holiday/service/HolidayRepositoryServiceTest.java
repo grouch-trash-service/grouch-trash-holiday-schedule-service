@@ -41,7 +41,7 @@ public class HolidayRepositoryServiceTest {
 
         Holiday holiday = holidayService.fetchHoliday(holidayName);
 
-        assertEquals(holiday, holiday);
+        assertEquals(expectedHoliday, holiday);
     }
 
     @Test
