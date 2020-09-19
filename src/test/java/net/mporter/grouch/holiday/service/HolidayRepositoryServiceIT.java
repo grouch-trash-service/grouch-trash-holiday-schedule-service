@@ -8,20 +8,29 @@ import net.mporter.grouch.holiday.Application;
 import net.mporter.grouch.holiday.model.Holiday;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.DockerComposeContainer;
 
 import javax.annotation.PostConstruct;
+
+import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("local")
 public class HolidayRepositoryServiceIT {
+
+    @ClassRule
+    public static DockerComposeContainer compose =
+            new DockerComposeContainer(
+                    new File("docker-compose.yaml"));
 
     @Autowired
     HolidayService holidayService;

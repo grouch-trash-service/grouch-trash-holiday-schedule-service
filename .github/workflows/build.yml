@@ -30,16 +30,10 @@ jobs:
         ./mvnw clean package
 
     - name: Sam Build
-      run: |
-        docker-compose up -d
-        sam build
-        docker-compose down
+      run: sam build
 
     - name: SonarCloud Scan
-      run: |
-        docker-compose up -d
-        ./mvnw -Dsonar.login=${SONAR_TOKEN} verify sonar:sonar
-        docker-compose down
+      run: ./mvnw -Dsonar.login=${SONAR_TOKEN} verify sonar:sonar
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
