@@ -13,7 +13,10 @@ Resources:
       Runtime: java11
       CodeUri: .
       MemorySize: 512
-      Policies: AWSLambdaBasicExecutionRole
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref HolidayTable
       Timeout: 30
       Events:
         ProxyResource:
@@ -21,6 +24,21 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: any
+
+  HolidayTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Holiday
+      AttributeDefinitions:
+        - AttributeName: name
+          AttributeType: S
+
+      KeySchema:
+        - AttributeName: name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
 
 Outputs:
   GrouchTrashHolidayScheduleServiceApi:
