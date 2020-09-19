@@ -1,6 +1,7 @@
 package net.mporter.grouch.holiday.controller;
 
 import net.mporter.grouch.holiday.Application;
+import net.mporter.grouch.holiday.error.HolidayAlreadyExistException;
 import net.mporter.grouch.holiday.model.CreateHolidayRequest;
 import net.mporter.grouch.holiday.model.GetHolidayResponse;
 import net.mporter.grouch.holiday.model.GetHolidaysResponse;
@@ -19,14 +20,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -114,5 +115,18 @@ public class HolidayControllerIT {
 
         holiday.setRouteDelays(null);
         verify(holidayService).delete(holiday);
+    }
+
+    @Test
+    public void testAlreadyExistError() throws Exception {
+        CreateHolidayRequest createHolidayRequest = new CreateHolidayRequest(holiday);
+        String request = objectMapper.writeValueAsString(createHolidayRequest);
+        doThrow(HolidayAlreadyExistException.class).when(holidayService).create(holiday);
+        mockMvc.perform(post("/v1/holidays")
+                .content(request)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
+
     }
 }
