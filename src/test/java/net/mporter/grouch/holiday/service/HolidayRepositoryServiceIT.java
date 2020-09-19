@@ -8,7 +8,6 @@ import net.mporter.grouch.holiday.Application;
 import net.mporter.grouch.holiday.model.Holiday;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
