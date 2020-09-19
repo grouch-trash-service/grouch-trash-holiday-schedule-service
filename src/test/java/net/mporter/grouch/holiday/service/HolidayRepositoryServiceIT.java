@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import net.mporter.grouch.holiday.Application;
+import net.mporter.grouch.holiday.error.HolidayDoesNotExistException;
 import net.mporter.grouch.holiday.model.Holiday;
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +22,7 @@ import javax.annotation.PostConstruct;
 
 import java.io.File;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -83,7 +85,10 @@ public class HolidayRepositoryServiceIT {
 
     private void testDelete() {
         holidayService.delete(holiday);
-        assertNull(holidayService.fetchHoliday(holiday.getName()));
+        Throwable thrown = catchThrowable(() -> {
+            holidayService.fetchHoliday(holiday.getName());
+        });
+        assertThat(thrown).isInstanceOf(HolidayDoesNotExistException.class).hasMessageContaining(holiday.getName());
     }
 
     @PostConstruct

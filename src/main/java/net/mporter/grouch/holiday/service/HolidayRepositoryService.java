@@ -1,6 +1,7 @@
 package net.mporter.grouch.holiday.service;
 
 import net.mporter.grouch.holiday.error.HolidayAlreadyExistException;
+import net.mporter.grouch.holiday.error.HolidayDoesNotExistException;
 import net.mporter.grouch.holiday.model.Holiday;
 import net.mporter.grouch.holiday.repository.HolidayRepository;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,8 @@ public class HolidayRepositoryService implements HolidayService {
 
     @Override
     public Holiday fetchHoliday(final String holiday) {
-        return holidayRepository.findById(holiday).orElse(null);
+        return holidayRepository.findById(holiday)
+                .orElseThrow(new HolidayDoesNotExistException(String.format("Holiday '%s' does not exist", holiday)));
     }
 
     @Override

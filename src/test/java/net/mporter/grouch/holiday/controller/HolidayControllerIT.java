@@ -2,6 +2,7 @@ package net.mporter.grouch.holiday.controller;
 
 import net.mporter.grouch.holiday.Application;
 import net.mporter.grouch.holiday.error.HolidayAlreadyExistException;
+import net.mporter.grouch.holiday.error.HolidayDoesNotExistException;
 import net.mporter.grouch.holiday.model.CreateHolidayRequest;
 import net.mporter.grouch.holiday.model.GetHolidayResponse;
 import net.mporter.grouch.holiday.model.GetHolidaysResponse;
@@ -86,13 +87,14 @@ public class HolidayControllerIT {
     public void testCreateHoliday() throws Exception {
         CreateHolidayRequest createHolidayRequest = new CreateHolidayRequest(holiday);
         String request = objectMapper.writeValueAsString(createHolidayRequest);
+        doNothing().when(holidayService).create(holiday);
         mockMvc.perform(post("/v1/holidays")
                 .content(request)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        verify(holidayService).create(holiday);
+        verify(holidayService, times(2)).create(holiday);
     }
 
     @Test
@@ -128,5 +130,12 @@ public class HolidayControllerIT {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
 
+    }
+
+    @Test
+    public void testNotFoundError() throws Exception {
+        doThrow(HolidayDoesNotExistException.class).when(holidayService).fetchHoliday(holiday.getName());
+        mockMvc.perform(get("/v1/holidays/"+ holiday.getName()))
+                .andExpect(status().isNotFound());
     }
 }
