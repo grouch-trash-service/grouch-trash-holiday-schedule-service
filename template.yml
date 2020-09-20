@@ -6,6 +6,13 @@ Globals:
     EndpointConfiguration: REGIONAL
 
 Resources:
+  GrouchTrashHolidayScheduleServiceApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+
   GrouchTrashHolidayScheduleServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -22,6 +29,7 @@ Resources:
         ProxyResource:
           Type: Api
           Properties:
+            RestApiId: !Ref GrouchTrashHolidayScheduleServiceApi
             Path: /{proxy+}
             Method: any
 
@@ -43,6 +51,6 @@ Resources:
 Outputs:
   GrouchTrashHolidayScheduleServiceApi:
     Description: URL for application
-    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/ping'
+    Value: !Sub 'https://${GrouchTrashHolidayScheduleServiceApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'
     Export:
       Name: GrouchTrashHolidayScheduleServiceApi
