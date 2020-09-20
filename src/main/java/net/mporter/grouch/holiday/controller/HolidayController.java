@@ -1,7 +1,5 @@
 package net.mporter.grouch.holiday.controller;
 
-
-
 import net.mporter.grouch.holiday.model.CreateHolidayRequest;
 import net.mporter.grouch.holiday.model.GetHolidayResponse;
 import net.mporter.grouch.holiday.model.GetHolidaysResponse;
