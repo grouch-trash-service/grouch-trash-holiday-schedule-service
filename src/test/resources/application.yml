@@ -1,0 +1,4 @@
+aws:
+  region: us-east-1
+  servicename: execute-api
+  endpoint: http://localhost:8080

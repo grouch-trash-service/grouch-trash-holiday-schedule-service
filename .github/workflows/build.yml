@@ -29,6 +29,9 @@ jobs:
       run: |
         ./mvnw clean package
 
+    - name: Run local Cucumber Tests
+      run: ./mvnw -P cucumber verify
+
     - name: Sam Build
       run: sam build
 
@@ -53,3 +56,6 @@ jobs:
 
     - name: Deploy to AWS
       run: sam deploy --no-fail-on-empty-changeset
+
+    - name: Run Cucumber Tests
+      run: ./mvnw -P cucumber verify -Dspring.profiles.active=prod
