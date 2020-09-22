@@ -143,6 +143,7 @@ public class StepDefs extends SpringCucumberContext {
 
     @Then("^the holiday is created$")
     public void validateHolidayIsCreated() {
+        assertEquals(HttpStatus.CREATED.value(), response.getHttpResponse().getStatusCode());
         validHolidayRequest();
         requestHoliday();
         validateHoliday();
