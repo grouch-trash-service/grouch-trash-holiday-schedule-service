@@ -8,6 +8,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.http.AmazonHttpClient;
 import com.amazonaws.http.ExecutionContext;
 import com.amazonaws.http.HttpMethodName;
+import com.amazonaws.http.HttpResponseHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cucumber.api.java.After;
@@ -18,8 +19,10 @@ import cucumber.api.java.en.When;
 import net.mporter.grouch.holiday.cucumber.error.HolidayNotFoundException;
 import net.mporter.grouch.holiday.cucumber.handler.GetHolidayResponseHandler;
 import net.mporter.grouch.holiday.cucumber.handler.ErrorResponseHandler;
+import net.mporter.grouch.holiday.cucumber.handler.GetHolidaysResponseHandler;
 import net.mporter.grouch.holiday.model.CreateHolidayRequest;
 import net.mporter.grouch.holiday.model.GetHolidayResponse;
+import net.mporter.grouch.holiday.model.GetHolidaysResponse;
 import net.mporter.grouch.holiday.model.Holiday;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,7 +80,7 @@ public class StepDefs extends SpringCucumberContext {
 
     @Given("^the holiday exists$")
     public void createHoliday() throws JsonProcessingException {
-        Request<CreateHolidayRequest> request = new DefaultRequest<CreateHolidayRequest>(serviceName);
+        Request<CreateHolidayRequest> request = new DefaultRequest<>(serviceName);
         request.setHttpMethod(HttpMethodName.POST);
         request.setEndpoint(URI.create(endpoint+"/v1/holidays"));
         request.getHeaders().put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -97,18 +100,23 @@ public class StepDefs extends SpringCucumberContext {
                 .execute();
     }
 
+    @Given("^A valid request for all holidays$")
+    public void validGetHolidaysRequest() {
+        request = new DefaultRequest<Void>(serviceName);
+        request.setHttpMethod(HttpMethodName.GET);
+        request.setEndpoint(URI.create(endpoint+"/v1/holidays"));
+        signRequest(request);
+    }
+
     @When("^Request for a holiday$")
     public void requestHoliday() {
-        try {
-            response = amazonHttpClient
-                    .requestExecutionBuilder()
-                    .executionContext(new ExecutionContext(true))
-                    .errorResponseHandler(new ErrorResponseHandler())
-                    .request(request)
-                    .execute(new GetHolidayResponseHandler());
-        } catch (Exception e) {
-            exception = e;
-        }
+        submitRequest(new GetHolidayResponseHandler());
+    }
+
+    @When("^a user requests for all holidays$")
+    public void requestGetAllHolidays() throws JsonProcessingException {
+        createHoliday();
+        submitRequest(new GetHolidaysResponseHandler());
     }
 
     @Then("^a holiday is not returned$")
@@ -122,6 +130,26 @@ public class StepDefs extends SpringCucumberContext {
         GetHolidayResponse getHolidayResponse = (GetHolidayResponse) response.getAwsResponse();
         assertEquals(HttpStatus.OK.value(), response.getHttpResponse().getStatusCode());
         assertEquals(holiday, getHolidayResponse.getData());
+    }
+
+    @Then("^all holidays are returned$")
+    public void validateAllHoldiays() {
+        GetHolidaysResponse getHolidaysResponse = (GetHolidaysResponse) response.getAwsResponse();
+        assertEquals(HttpStatus.OK.value(), response.getHttpResponse().getStatusCode());
+        assertTrue(getHolidaysResponse.getData().contains(holiday));
+    }
+
+    private void submitRequest(HttpResponseHandler httpResponseHandler) {
+        try {
+            response = amazonHttpClient
+                    .requestExecutionBuilder()
+                    .executionContext(new ExecutionContext(true))
+                    .errorResponseHandler(new ErrorResponseHandler())
+                    .request(request)
+                    .execute(httpResponseHandler);
+        } catch (Exception e) {
+            exception = e;
+        }
     }
 
     private void signRequest(Request request) {
