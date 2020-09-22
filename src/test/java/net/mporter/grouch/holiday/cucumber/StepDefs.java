@@ -9,6 +9,7 @@ import com.amazonaws.http.AmazonHttpClient;
 import com.amazonaws.http.ExecutionContext;
 import com.amazonaws.http.HttpMethodName;
 import com.amazonaws.http.HttpResponseHandler;
+import com.amazonaws.http.response.AwsResponseHandlerAdapter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cucumber.api.java.After;
@@ -16,6 +17,7 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import net.mporter.grouch.holiday.cucumber.error.HolidayAlreadyExistsException;
 import net.mporter.grouch.holiday.cucumber.error.HolidayNotFoundException;
 import net.mporter.grouch.holiday.cucumber.handler.GetHolidayResponseHandler;
 import net.mporter.grouch.holiday.cucumber.handler.ErrorResponseHandler;
@@ -80,17 +82,7 @@ public class StepDefs extends SpringCucumberContext {
 
     @Given("^the holiday exists$")
     public void createHoliday() throws JsonProcessingException {
-        Request<CreateHolidayRequest> request = new DefaultRequest<>(serviceName);
-        request.setHttpMethod(HttpMethodName.POST);
-        request.setEndpoint(URI.create(endpoint+"/v1/holidays"));
-        request.getHeaders().put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-
-        CreateHolidayRequest createHolidayRequest = new CreateHolidayRequest(holiday);
-
-
-        byte[] content = objectMapper.writeValueAsBytes(createHolidayRequest);
-        request.setContent(new ByteArrayInputStream(content));
-        signRequest(request);
+        Request<CreateHolidayRequest> request = newCreateRequest();
 
         amazonHttpClient
                 .requestExecutionBuilder()
@@ -108,7 +100,12 @@ public class StepDefs extends SpringCucumberContext {
         signRequest(request);
     }
 
-    @When("^a user requets for a holiday$")
+    @Given("^a valid request to create a new holiday$")
+    public void validCreateRequest() throws JsonProcessingException {
+        request = newCreateRequest();
+    }
+
+    @When("^a user requests for a holiday$")
     public void requestHoliday() {
         submitRequest(new GetHolidayResponseHandler());
     }
@@ -117,6 +114,11 @@ public class StepDefs extends SpringCucumberContext {
     public void requestGetAllHolidays() throws JsonProcessingException {
         createHoliday();
         submitRequest(new GetHolidaysResponseHandler());
+    }
+
+    @When("^a user requests to create a holiday$")
+    public void requestCreateHoliday() {
+        submitRequest(null);
     }
 
     @Then("^a holiday is not returned$")
@@ -137,6 +139,19 @@ public class StepDefs extends SpringCucumberContext {
         GetHolidaysResponse getHolidaysResponse = (GetHolidaysResponse) response.getAwsResponse();
         assertEquals(HttpStatus.OK.value(), response.getHttpResponse().getStatusCode());
         assertTrue(getHolidaysResponse.getData().contains(holiday));
+    }
+
+    @Then("^the holiday is created$")
+    public void validateHolidayIsCreated() {
+        validHolidayRequest();
+        requestHoliday();
+        validateHoliday();
+    }
+
+    @Then("^the holiday is not created$")
+    public void validateHolidayNotCreated() {
+        assertNotNull(exception);
+        assertTrue(exception instanceof HolidayAlreadyExistsException);
     }
 
     private void submitRequest(HttpResponseHandler httpResponseHandler) {
@@ -169,5 +184,20 @@ public class StepDefs extends SpringCucumberContext {
                 .errorResponseHandler(new ErrorResponseHandler())
                 .request(request)
                 .execute();
+    }
+
+    private Request<CreateHolidayRequest> newCreateRequest() throws JsonProcessingException {
+        Request<CreateHolidayRequest> request = new DefaultRequest<>(serviceName);
+        request.setHttpMethod(HttpMethodName.POST);
+        request.setEndpoint(URI.create(endpoint+"/v1/holidays"));
+        request.getHeaders().put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+        CreateHolidayRequest createHolidayRequest = new CreateHolidayRequest(holiday);
+
+
+        byte[] content = objectMapper.writeValueAsBytes(createHolidayRequest);
+        request.setContent(new ByteArrayInputStream(content));
+        signRequest(request);
+        return request;
     }
 }
