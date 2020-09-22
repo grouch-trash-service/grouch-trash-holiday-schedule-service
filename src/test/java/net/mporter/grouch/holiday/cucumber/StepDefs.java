@@ -70,7 +70,7 @@ public class StepDefs extends SpringCucumberContext {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Given("^A valid request for a holiday$")
+    @Given("^a valid request for a holiday$")
     public void validHolidayRequest() {
         request = new DefaultRequest<Void>(serviceName);
         request.setHttpMethod(HttpMethodName.GET);
@@ -100,7 +100,7 @@ public class StepDefs extends SpringCucumberContext {
                 .execute();
     }
 
-    @Given("^A valid request for all holidays$")
+    @Given("^a valid request for all holidays$")
     public void validGetHolidaysRequest() {
         request = new DefaultRequest<Void>(serviceName);
         request.setHttpMethod(HttpMethodName.GET);
@@ -108,7 +108,7 @@ public class StepDefs extends SpringCucumberContext {
         signRequest(request);
     }
 
-    @When("^Request for a holiday$")
+    @When("^a user requets for a holiday$")
     public void requestHoliday() {
         submitRequest(new GetHolidayResponseHandler());
     }
