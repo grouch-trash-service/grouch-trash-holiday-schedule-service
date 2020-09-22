@@ -17,6 +17,7 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import lombok.extern.slf4j.Slf4j;
 import net.mporter.grouch.holiday.cucumber.error.HolidayAlreadyExistsException;
 import net.mporter.grouch.holiday.cucumber.error.HolidayNotFoundException;
 import net.mporter.grouch.holiday.cucumber.handler.GetHolidayResponseHandler;
@@ -26,6 +27,7 @@ import net.mporter.grouch.holiday.model.CreateHolidayRequest;
 import net.mporter.grouch.holiday.model.GetHolidayResponse;
 import net.mporter.grouch.holiday.model.GetHolidaysResponse;
 import net.mporter.grouch.holiday.model.Holiday;
+import net.mporter.grouch.holiday.model.UpdateHolidayRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -37,6 +39,7 @@ import java.net.URI;
 
 import static org.junit.Assert.*;
 
+@Slf4j
 public class StepDefs extends SpringCucumberContext {
     @Autowired
     AmazonHttpClient amazonHttpClient;
@@ -105,6 +108,21 @@ public class StepDefs extends SpringCucumberContext {
         request = newCreateRequest();
     }
 
+    @Given("^a valid request to update a holiday$")
+    public void validUpdateRequest() throws JsonProcessingException {
+        request = new DefaultRequest<>(serviceName);
+        request.setHttpMethod(HttpMethodName.PUT);
+        request.setEndpoint(URI.create(endpoint+"/v1/holidays/"+holiday.getName()));
+        request.getHeaders().put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        holiday.setRouteDelays("There are now delays!");
+        UpdateHolidayRequest updateHolidayRequest = new UpdateHolidayRequest(holiday);
+
+
+        byte[] content = objectMapper.writeValueAsBytes(updateHolidayRequest);
+        request.setContent(new ByteArrayInputStream(content));
+        signRequest(request);
+    }
+
     @When("^a user requests for a holiday$")
     public void requestHoliday() {
         submitRequest(new GetHolidayResponseHandler());
@@ -118,6 +136,11 @@ public class StepDefs extends SpringCucumberContext {
 
     @When("^a user requests to create a holiday$")
     public void requestCreateHoliday() {
+        submitRequest(null);
+    }
+
+    @When("^a user requests to update a holiday$")
+    public void requestUpdateHoliday() {
         submitRequest(null);
     }
 
@@ -143,7 +166,13 @@ public class StepDefs extends SpringCucumberContext {
 
     @Then("^the holiday is created$")
     public void validateHolidayIsCreated() {
-        assertEquals(HttpStatus.CREATED.value(), response.getHttpResponse().getStatusCode());
+        int createdStatus = HttpStatus.CREATED.value();
+        int updatedStatus = HttpStatus.OK.value();
+        assertTrue(
+            response.getHttpResponse().getStatusCode() == createdStatus ||
+                    response.getHttpResponse().getStatusCode() == updatedStatus
+        );
+
         validHolidayRequest();
         requestHoliday();
         validateHoliday();
@@ -155,6 +184,14 @@ public class StepDefs extends SpringCucumberContext {
         assertTrue(exception instanceof HolidayAlreadyExistsException);
     }
 
+    @Then("^the holiday is updated$")
+    public void validateHolidayUpdated(){
+        assertEquals(HttpStatus.OK.value(), response.getHttpResponse().getStatusCode());
+        validHolidayRequest();
+        requestHoliday();
+        validateHoliday();
+    }
+
     private void submitRequest(HttpResponseHandler httpResponseHandler) {
         try {
             response = amazonHttpClient
@@ -164,6 +201,7 @@ public class StepDefs extends SpringCucumberContext {
                     .request(request)
                     .execute(httpResponseHandler);
         } catch (Exception e) {
+            log.warn("Error thrown.", e);
             exception = e;
         }
     }
