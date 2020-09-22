@@ -123,6 +123,14 @@ public class StepDefs extends SpringCucumberContext {
         signRequest(request);
     }
 
+    @Given("^a valid request to delete a holiday$")
+    public void validDeleteRequest() {
+        request = new DefaultRequest<Void>(serviceName);
+        request.setHttpMethod(HttpMethodName.DELETE);
+        request.setEndpoint(URI.create(endpoint+"/v1/holidays/"+holiday.getName()));
+        signRequest(request);
+    }
+
     @When("^a user requests for a holiday$")
     public void requestHoliday() {
         submitRequest(new GetHolidayResponseHandler());
@@ -141,6 +149,11 @@ public class StepDefs extends SpringCucumberContext {
 
     @When("^a user requests to update a holiday$")
     public void requestUpdateHoliday() {
+        submitRequest(null);
+    }
+
+    @When("^a user requests to delete a holiday$")
+    public void requestDeleteHoliday() {
         submitRequest(null);
     }
 
@@ -190,6 +203,14 @@ public class StepDefs extends SpringCucumberContext {
         validHolidayRequest();
         requestHoliday();
         validateHoliday();
+    }
+
+    @Then("^the holiday is deleted$")
+    public void validateDeleteHoliday() {
+        assertEquals(HttpStatus.OK.value(), response.getHttpResponse().getStatusCode());
+        validHolidayRequest();
+        requestHoliday();
+        errorIsThrown();
     }
 
     private void submitRequest(HttpResponseHandler httpResponseHandler) {
