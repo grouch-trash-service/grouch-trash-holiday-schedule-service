@@ -19,12 +19,13 @@ Resources:
       Handler: net.mporter.grouch.holiday.StreamLambdaHandler::handleRequest
       Runtime: java11
       CodeUri: .
-      MemorySize: 3008
+      MemorySize: 512
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref HolidayTable
       Timeout: 30
+      ReservedConcurrentExecutions: 1
       Events:
         ProxyResource:
           Type: Api
@@ -32,9 +33,6 @@ Resources:
             RestApiId: !Ref GrouchTrashHolidayScheduleServiceApi
             Path: /{proxy+}
             Method: any
-      Environment:
-        Variables:
-          JAVA_TOOL_OPTIONS: -Xverify:none
 
   HolidayTable:
     Type: AWS::DynamoDB::Table
