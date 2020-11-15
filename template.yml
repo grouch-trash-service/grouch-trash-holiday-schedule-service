@@ -26,6 +26,9 @@ Resources:
             TableName: !Ref HolidayTable
       Timeout: 30
       ReservedConcurrentExecutions: 1
+      AutoPublishAlias: live
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ProxyResource:
           Type: Api
